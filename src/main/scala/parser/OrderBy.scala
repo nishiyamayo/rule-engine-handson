@@ -2,8 +2,6 @@ package parser
 
 import constant.{Arrangement, Order}
 
-
-
 trait OrderParsers extends ExpressionParsers with WordParsers{
   def orderBy: Parser[Seq[Order]] = "ORDER BY" ~ order ~ rep("," ~ order) ^^ {
     case _ ~ or ~ ors =>

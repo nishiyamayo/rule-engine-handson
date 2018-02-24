@@ -1,7 +1,7 @@
 package parser
 
 trait AggregationVisitor {
-  def visit(e: Aggregation): Double
+  def visit(a: Aggregation): Double
 }
 
 trait Aggregation {
@@ -41,8 +41,8 @@ trait AggregationParsers extends ExpressionParsers with MyParsers{
 
   def aTerm: Parser[Aggregation] = aPrimary ~ rep(("*" | "/") ~ aPrimary) ^^ {
     case f ~ fs => fs.foldLeft(f) {
-      case (acc, c) => AggregationMultiply(acc, c._2)
-      case (acc, c) => AggregationDivide(acc, c._2)
+      case (acc, ("*" ~ c)) => AggregationMultiply(acc, c)
+      case (acc, ("/" ~ c)) => AggregationDivide(acc, c)
     }
   }
 

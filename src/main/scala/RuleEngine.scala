@@ -1,48 +1,43 @@
 package scala
 
+import constant.Row
 import parser._
+import visitor.{Aggregator, Evaluator}
 
 object RuleEngine extends App {
 
-  class MyParser extends ExpressionParsers
+  val rows = Seq(
+    Row(1, 2, 3, "tag1"),
+    Row(4, 5, 6, "tag2"),
+    Row(7, 8, 9, "tag3")
+  )
 
-  val parser = new MyParser
+  val rule1 = "0.8 * row.f1 + row.f2"
+  val rule2 = "AVE(1.5 * row.f3)"
+  val rule3 = s"$rule1 > $rule2 OR word: row.tag contains word: g1"
 
-  val rule = "(row.f1 * 5) + 3"
-    val parseResult = parser.parseAll(parser.expression, rule)
+  class CondParser extends ConditionParsers
+  val parser = new CondParser
 
-    println(parseResult)
+  val exprResult = parser.parseAll(parser.expression, rule1)
+  val aggrResult = parser.parseAll(parser.aExpression, rule2)
+  val condResult = parser.parseAll(parser.conditions, rule3)
 
-    if (parseResult.successful) {
-      val ev1 = new Evaluator(Row(1, 2, 3, "test"))
-      val ev2 = new Evaluator(Row(2, 3, 4, "test"))
-      val ev3 = new Evaluator(Row(3, 4, 5, "test"))
-      println(parseResult.get.accept(ev1))
-      println(parseResult.get.accept(ev2))
-      println(parseResult.get.accept(ev3))
+  println(exprResult)
+  println(aggrResult)
+  println(condResult)
+
+  val evs = rows.map(new Evaluator(_))
+
+  evs.foreach(ev => {
+    if (exprResult.successful) {
+      println(exprResult.get.accept(ev))
     }
-}
-
-class Evaluator(ad: Row) extends ExpressionVisitor {
-  override def visit(e: Expression): Double = e match {
-    case Constant(digit: Double) => digit
-
-    case RowNumber(field: String) => field match {
-      case "f1" => ad.feature1
-      case "f2" => ad.feature2
-      case "f3" => ad.feature3
+    if (aggrResult.successful) {
+      println(aggrResult.get.accept(new Aggregator(evs, ev)))
     }
-
-    case Add(expr1: Expression, expr2: Expression) => expr1.accept(this) + expr2.accept(this)
-
-    case Sub(expr1: Expression, expr2: Expression) => expr1.accept(this) - expr2.accept(this)
-
-    case Multiply(expr1: Expression, expr2: Expression) => expr1.accept(this) * expr2.accept(this)
-
-    case Divide(expr1: Expression, expr2: Expression) => expr1.accept(this) / expr2.accept(this)
-
-    case Minus(expr: Expression) => expr.accept(this)
-  }
+    if (condResult.successful) {
+      println(condResult.get.accept(new Aggregator(evs, ev)))
+    }
+  })
 }
-
-case class Row(feature1: Long, feature2: Long, feature3: Long, tag: String)

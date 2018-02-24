@@ -10,7 +10,7 @@ trait Expression {
   }
 }
 
-case class Constant(digit: Double) extends Expression
+case class Constant(digit: String) extends Expression
 
 case class RowNumber(field: String) extends Expression
 
@@ -60,7 +60,7 @@ trait ExpressionParsers extends MyParsers {
     case _ ~ _ ~ field => RowNumber(field)
   }
 
-  def number: Parser[Expression] = wholeNumber ^^ {
-    v => Constant(v.toLong)
+  def number: Parser[Expression] = decimalNumber ^^ {
+    v => Constant(v)
   }
 }

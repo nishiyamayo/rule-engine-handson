@@ -1,7 +1,7 @@
 package parser
 
 trait WordVisitor {
-  def visit(e: Word): String
+  def visit(w: Word): String
 }
 
 trait Word {

@@ -1,7 +1,7 @@
 package parser
 
 trait LimitVisitor {
-  def visit(limit: Limit): Int
+  def visit(l: Limit): Int
 }
 
 trait Limit {
@@ -10,7 +10,7 @@ trait Limit {
   }
 }
 
-case class AggregationLimit(expr: Aggregation) extends Limit
+case class AggregationLimit(aggr: Aggregation) extends Limit
 
 class LimitParsers extends AggregationParsers {
   def limit: Parser[Limit] = "LIMIT" ~ aExpression ^^ {
